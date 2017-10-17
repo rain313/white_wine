@@ -1,0 +1,465 @@
+白葡萄酒数据集探索性分析
+========================================================
+***
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
+# Load all of the packages that you end up using
+# in your analysis in this code chunk.
+
+# Notice that the parameter "echo" was set to FALSE for this code chunk.
+# This prevents the code from displaying in the knitted HTML output.
+# You should set echo=FALSE for all code chunks in your file.
+
+library(ggplot2)
+library(gpairs)
+library(memisc)
+```
+
+```{r echo=FALSE, Load_the_Data}
+# Load the Data
+wine <- read.csv("D:/R/Download/wineQualityWhites.csv")
+```
+
+# 数据集概览
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+str(wine)
+```
+```{r echo=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+summary(wine)
+```
+
+#### 数据集包括13个变量，接近5000条观测。
+
+***
+
+# 单一变量图
+
+## quality的分布
+
+```{r echo=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(x=quality),data=wine)+
+  geom_histogram(binwidth = 0.5)+
+  scale_x_continuous(breaks = seq(3,9,1))
+```
+
+#### 因为评分并非连续变量，设置bin宽度，突出其变量非连续。大部分酒类评分为6分，超总量40%。
+
+## fixed.acidity的分布
+
+```{r echo=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(x=fixed.acidity),data=wine)+
+  geom_histogram(binwidth = .1)
+```
+```{r echo=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+summary(wine$fixed.acidity)
+```
+
+#### 数据集包含的白葡萄酒在fixed.acidity上大致呈正态分布，大部分位于(6.3 , 7.3)，median:6.8，mean:6.855。
+
+## volatile.acidity的分布
+
+```{r echo=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(x=volatile.acidity),data=wine)+
+  geom_histogram(binwidth = .01)
+```
+
+```{r echo=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+summary(wine$volatile.acidity)
+```
+
+#### 数据集包含的白葡萄酒在volatile.acidity上呈偏态分布，大部分位于(0.21 , 0.32)，median:0.26，mean:0.2782。
+
+## citric.acid的分布
+
+```{r echo=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(x=citric.acid),data=wine)+
+  geom_histogram(binwidth = .01)
+```
+
+```{r echo=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+summary(wine$citric.acid)
+```
+
+```{r echo=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+# 统计不同柠檬酸含量酒类数量
+table(wine$citric.acid)
+```
+
+#### 数据集包含的白葡萄酒在citric.acid上大致呈正态分布，大部分位于(0.27 , 0.39)，median:0.32，mean:0.3342。
+#### 柠檬酸值为0.49的白葡萄酒种类有215种之多，远多于其值周边值的葡萄酒种类。
+
+## residual.sugar的分布
+
+```{r echo=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(x=residual.sugar),data=wine)+
+  geom_histogram(binwidth = .1)
+```
+
+```{r echo=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+summary(wine$residual.sugar)
+```
+
+#### 数据集包含的白葡萄酒在residual.suga上呈偏态分布，大部分位于(1.7 , 9.9)，即图像左侧。
+
+## residual.sugar的分布log转换
+
+```{r echo=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+# log10转换
+ggplot(aes(x=residual.sugar),data=wine)+
+  geom_histogram(binwidth = .04)+
+  scale_x_log10(breaks = seq(0,60,5))+ 
+  theme(axis.text=element_text(size=7))
+```
+
+#### 转换后的数据大致呈双峰分布。根据前面可以了解，绝大部分酒类的残余糖分大于2低于20，大部分集中在3和10左右。
+
+## chlorides的分布
+
+```{r echo=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(x=chlorides),data=wine)+
+  geom_histogram(binwidth = .001)
+```
+
+```{r echo=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+summary(wine$chlorides)
+```
+
+#### 数据集包含的白葡萄酒在chlorides上大致呈正态分布，但有部分异常值干扰。大部分位于(0.036 , 0.05)区间内。
+
+## 去掉chlorides值最大的3%后的分布
+
+```{r echo=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+# 排除氯化物含量最大的3%数据
+ggplot(aes(x=chlorides),data=subset(wine,wine$chlorides < quantile(wine$chlorides,0.97)))+
+  geom_histogram(binwidth = .001)
+```
+
+#### 去掉 chlorides Top3%值的数据呈正态分布。
+
+## free.sulfur.dioxide的分布
+
+```{r echo=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(x=free.sulfur.dioxide),data=wine)+
+  geom_histogram(binwidth = 1)
+```
+
+```{r echo=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+summary(wine$free.sulfur.dioxide)
+```
+
+#### 数据集包含的白葡萄酒在free.sulfur.dioxide上大致呈正态分布，有部分异常值干扰。大部分位于(23 , 46)，median:34，mean:35.31。
+
+## 去掉free.sulfur.dioxide值最大的1%后的分布
+
+```{r echo=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+# 排除游离二氧化硫含量最大的1%数据
+ggplot(aes(x=free.sulfur.dioxide),data=subset(wine,wine$free.sulfur.dioxide < quantile(wine$free.sulfur.dioxide,0.99)))+
+  geom_histogram(binwidth = 1)
+```
+
+#### 去掉 free.sulfur.dioxide Top1%值的数据呈正态分布。
+
+## total.sulfur.dioxide的分布
+
+```{r echo=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(x=total.sulfur.dioxide),data=wine)+
+  geom_histogram(binwidth = 2)
+```
+
+```{r echo=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+summary(wine$total.sulfur.dioxide)
+```
+
+#### 数据集包含的白葡萄酒在total.sulfur.dioxide上大致呈正态分布，大部分位于(108 , 167)，median:134，mean:138.4。
+
+## density的分布
+
+```{r echo=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(x=density),data=wine)+
+  geom_histogram(binwidth = .001)
+```
+
+```{r echo=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+summary(wine$density)
+```
+
+#### 数据集包含的白葡萄酒密度大部分位于(0.9917 , 0.9961)，median:0.9937，mean:0.9940。
+
+## pH的分布
+
+```{r echo=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(x=pH),data=wine)+
+  geom_histogram(binwidth = .01)
+```
+
+```{r echo=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+summary(wine$pH)
+```
+
+#### 数据集包含的白葡萄酒在pH上大致呈正态分布，大部分位于(3.090 , 3.280)，median:3.180，mean:3.188。
+
+## sulphates的分布
+
+```{r echo=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(x=sulphates),data=wine)+
+  geom_histogram(binwidth = .01)
+```
+
+```{r echo=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+summary(wine$sulphates)
+```
+
+#### 数据集包含的白葡萄酒硫酸盐含量大部分处于(0.41 , 0.55)内，median:0.4700，mean:0.4849。
+
+## alcohol的分布
+
+```{r echo=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(x=alcohol),data=wine)+
+  geom_histogram(binwidth = .1)
+```
+
+```{r echo=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+summary(wine$alcohol)
+```
+
+#### 数据集包含的白葡萄酒酒精含量大部分处于(9.50 , 11.40)内，median:10.40，mean:10.51。
+
+***
+
+# 单因素分析
+
+### 您的数据集的结构是什么？
+
+#### 数据集中有4898种白葡萄酒，具有11个量化每种酒化学成分的变量（非挥发性酸、挥发性酸、柠檬酸、残余糖分、氯化物、游离二氧化硫、总二氧化硫量、密度、pH值、硫酸盐、乙醇）
+
+
+#### 其他意见：
+
+####   ·酒质量评分分级介于0（极坏的）与10（非常优秀）之间
+####   ·大多数酒评分为6分，分数大致呈正态分布
+####   ·残余糖分呈偏态分布，分布范围（0.6，65.8），但75%分布在（0.6，9.9）内
+####   ·大部分酒的各种化学成分呈正态分布
+
+### 你的数据集中感兴趣的主要特性是什么？
+
+#### 数据集主要的特征是质量评分，我想确定哪些化学因素可以用来确定质量评分，根据查阅相关资料，白葡萄酒质量高低取决于酒精、残糖、甘油、单宁、酸度和干浸出物的平衡。
+
+### 您认为数据集中还有哪些功能可以帮助您调查您的兴趣特征？
+
+#### alcohol、residual sugar、pH、density有可能导致评分高低，我认为alcohol对质量评分影响最大.
+
+### 您是否从数据集中的现有变量创建了任何新变量？
+
+#### 根据查阅的相关资料，我没有把握能对各化学因素进行合乎常理的组合，故放弃了创建新变量。
+
+### 在您调查的功能中，有不寻常的分布？您是否对数据执行任何操作以整理，调整或更改数据的形式？如果是这样，你为什么这么做？
+
+#### 我对残余糖分进行了log10转换后，残余糖分呈双峰分布，大部分布中在3和10左右。
+
+
+
+***
+
+# 双变量图
+
+```{r echo=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+# 求数据集各变量的相关系数
+cor(wine[2:13],wine[2:13])
+```
+
+
+```{r echo=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+# 数据集各变量的相关系数、散点图
+
+gpairs(wine[2:13],
+       upper.pars = list(scatter = "stats"),
+       stat.pars = list(fontsize = 8, signif = 0.05, verbose = F, use.color = T),
+       lower.pars = list(scatter = "loess"),
+       diagonal = "default",
+       diag.pars = list(fontsize = 8, show.hist = TRUE, hist.color = 'black'),
+       axis.pars = list(n.ticks = 5, fontsize = 6))
+
+```
+
+#### 质量评分与酒精含量关系散点图如下：
+
+```{r echo=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(factor(quality), alcohol), data = wine) +
+  geom_jitter( alpha = 0.3)  +
+  geom_boxplot( alpha = 0.5) +
+  labs(x="quality")
+```
+
+#### 质量评分与密度关系散点图如下：
+
+```{r echo=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(factor(quality), density), data = wine) +
+  geom_jitter( alpha = 0.3)  +
+  geom_boxplot( alpha = 0.5) +
+  coord_cartesian(ylim = c(0.985,1.005)) +
+  labs(x="quality")
+```
+
+#### 质量评分与氯化物含量关系散点图如下：
+
+```{r echo=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(factor(quality), chlorides), data = wine) +
+  geom_jitter( alpha = 0.3)  +
+  geom_boxplot( alpha = 0.5) +
+  coord_cartesian(ylim = c(0.001,0.101)) +
+  labs(x="quality")
+```
+
+
+
+
+# 双变量分析
+
+### 谈谈你在调查的这一部分中所观察到的一些关系。兴趣特性如何与数据集中的其他特性不同？
+
+#### ·双变量图红色代表负相关，蓝色代表正相关，颜色越深代表相关性越强。
+#### ·与质量评分相关性最强的三个变量是酒精、密度和氯化物，相关系数依次为0.44、-0.31、-0.21
+#### ·我感兴趣的特征值为酒精，与质量评分相关性最高
+#### ·由于低于5分的酒种类占比较低，将该部分数据排除来看：酒类评分越高，酒精含量越高，密度越小，氯化物含量越低
+
+### 你发现的最强的关系是什么？你观察到了其他特征之间的有趣关系（而不是兴趣的主要特征）吗？
+
+#### ·最强正相关关系为残余糖分和密度，相关系数0.84
+#### ·最强负相关关系为酒精和密度，相关系数-0.78
+#### ·看来白葡萄酒的密度随残余糖分的减少和酒精的增加有所减低，也就是说发酵越完全的白葡萄酒密度越小（？）
+
+### 双变量线性关系验证
+
+```{r echo=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+# 拟合质量评分~酒精含量线性模型，并将参数存入m1
+
+m1 <- lm(quality~alcohol,data=subset(wine,wine$quality >= 5))
+summary(m1)
+
+```
+
+#### R-squared:0.2185，可知拟合程度并不高。而且局限在于只对quality评分不低于5分时有一定的参考意义。
+
+***
+
+# 多变量图
+
+#### acohol VS density VS quality
+
+```{r echo=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(x=alcohol,y=density,color=factor(quality)),data=wine)+
+  scale_color_brewer(palette = "Blues") +
+  geom_point(position = "jitter",size=1.5,alpha=.2)+
+  geom_smooth(method = "lm",se=FALSE,size=1)+
+  ylim(0.985,1.005)
+```
+
+#### reisdual.sugar VS density VS quality
+
+```{r echo=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(x=residual.sugar,y=density,color=factor(quality)),data=wine)+
+  scale_color_brewer(palette = "Blues") +
+  geom_point(position = "jitter",size=1.5,alpha=.2)+
+  geom_smooth(method = "lm",se=FALSE,size=1)+
+  coord_cartesian(xlim=c(0,30),ylim=c(0.985,1.005))
+```
+
+
+# 多变量分析
+
+### 谈谈你在调查的这一部分中所观察到的一些关系。看你感兴趣的特点，有没有强化彼此的特征？特征之间有什么有趣的或令人惊讶的交互吗？
+
+#### ·在酒精与密度关系中，引入第三变量：质量评分。令图像特征明显许多，质量评分高的酒类拟合直线更为陡峭，也即质量越高的酒随酒精含量增加密度下降越快；
+
+#### ·在残余糖分与密度关系中，引入第三变量：质量评分。令图像特征明显许多，质量评分高的酒类拟合直线更为陡峭，也即质量越高的酒随残余糖分的增加密度上升越快  
+
+### 在双变量基础上加上密度变量验证线性模型,考虑到密度的另一影响因素：残余糖分，亦将该变量加入建模
+
+```{r echo=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+# 拟合直线，因变量quality，加入alcohol、density、1/residual.sugar三个自变量进行直线拟合，分别写入m1、m2、m3
+
+m1 <- lm(quality~alcohol,data=subset(wine,quality >= 5))
+m2 <- update(m1 ,~ .* density)
+m3 <- update(m2 ,~ .* I(1/residual.sugar))
+
+mtable(m1, m2, m3)
+```
+
+#### R-squared由0.219到0.226到0.237，拟合度有所上升，但仍然过低，该模型局限性太强。
+
+***
+
+# 最终图和总结
+
+### 图1
+
+```{r echo=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(x=quality),data=wine)+
+  geom_histogram(binwidth = 0.5,fill="#6699cc")+
+  scale_x_continuous(breaks = seq(3,9,1))+
+  scale_y_continuous(breaks = seq(0,2250,250))+
+  labs(x="Quality",y="Number")+
+  ggtitle("Density VS Quality")+
+  theme(axis.title =element_text(size=12,face= "bold", color="#6699cc"),
+        title = element_text(size=14,face= "bold", color="#6699cc"),
+        axis.text= element_text(size=10, color="#6699cc"))
+```
+
+#### 描述：质量评分分布图，x轴代表不同等级质量评分，y轴代表质量对应的数量。可以看出约2200种酒评分为6分，约1500种酒评分为5分，约825种酒评分为7。最高分（9分）和最低分（3分）的酒种类极少。
+
+### 图2
+
+```{r echo=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(factor(quality), alcohol), data = wine) +
+  geom_jitter(alpha = 0.5,color="#6699cc")  +
+  geom_boxplot(alpha = 0.3,color="#990000",size=0.7) +
+  coord_cartesian(ylim = c(8,14)) +
+  labs(x="Quality", y="Alcohol") +
+  ggtitle("Alcohol VS Quality") +
+  theme(axis.title =element_text(size=12,face= "bold", color="#6699cc"),
+        title = element_text(size=14,face= "bold", color="#6699cc"),
+        axis.text= element_text(size=10, color="#6699cc"),
+        panel.grid =element_blank())
+  
+```
+
+#### 描述：酒精与质量评分散点图，x轴代表不同等级质量评分，y轴代表酒精含量。从图中可以知道，在质量评分3-5的区间，酒精含量分布大致是随质量评分升高而降低的；在质量评分5-9的区间，酒精含量分布随评分升高也有较为明显的升高。特别在高分（不低于8分）区域，酒精含量也是最高的，所以可以假定，高浓度的白葡萄酒更受酒评人青睐。
+
+### 图3
+
+```{r echo=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(x=alcohol,y=density,color=factor(quality)),data=wine)+
+  scale_color_brewer(palette = "Blues") +
+  geom_point(position = "jitter",size=1.5,alpha=.3)+
+  geom_smooth(method = "lm",se=FALSE,size=1)+
+  scale_x_continuous(breaks = seq(8,14,1))+
+  ylim(0.985,1.005)+
+  labs(x="Alcohol", y="Density",colour = "Quality")+
+  ggtitle("Density VS Alcohol VS Quality")+
+  theme(axis.title =element_text(size=12,face= "bold", color="#6699cc"),
+        title = element_text(size=14,face= "bold", color="#6699cc"),
+        axis.text= element_text(size=10, color="#6699cc"),
+        legend.title = element_text(color="#6699cc", size=12, face="bold"),
+        legend.text = element_text(color="#6699cc", size = 10, face = "bold"),
+        legend.key.size=unit(1,'cm'),
+        panel.grid =element_blank())
+
+```
+
+#### 描述：酒精与质量评分散点图，x轴代表酒精含量，y轴代表密度，不同的直线代表不同质量评分下的拟合。由图中可以知道，酒的密度大致随酒精含量增加而下降，其中评分越高的酒类下降得越快，结合前面多变量分析我们这里可以假定：酒评人相对更青睐残余糖分少的酒，也就是说喝起来更像酒的酒更有可能得到高的分数。
+
+***
+
+# 思考
+
+#### 仅仅依靠现有的数据进行简单的组合变换，可能并不能得出拟合程度高的模型，只能找到一些大概的方向。但不可否认的是，依靠图像，能直观地观察数据，较容易发现数据的潜在规律。
+
+#### 原本的计划是建模，但遇到的最大的问题是拟合度一直很低。后来结合导师的建议仔细思考，放弃了最初依据化学因素推测分数这个计划，改为将质量分数作为自变量，化学因素作为因变量。这样可以作为评分的一个参考，比方知道酒评人将一个酒类打分打为8分，可以根据分数推测，各化学元素含量是否合理。
+
+#### 对于未来工作，我最大的疑问是：机器学习能否为我最初的想法建出一个拟合度高的模型？
+
+
+
+
+
